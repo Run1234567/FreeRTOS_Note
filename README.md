@@ -71,4 +71,47 @@
 | **vApplicationGetIdleTaskMemory**<br>`void vApplicationGetIdleTaskMemory(`<br>`  StaticTask_t **ppxIdleTaskTCBBuffer,`<br>`  StackType_t **ppxIdleTaskStackBuffer,`<br>`  uint32_t *pulIdleTaskStackSize`<br>`);` | - `ppxIdleTaskTCBBuffer`: 空闲任务TCB缓冲区指针<br>- `ppxIdleTaskStackBuffer`: 空闲任务堆栈缓冲区指针<br>- `pulIdleTaskStackSize`: 空闲任务堆栈大小指针 | 无 | 提供空闲任务内存 |
 | **vApplicationGetTimerTaskMemory**<br>`void vApplicationGetTimerTaskMemory(`<br>`  StaticTask_t **ppxTimerTaskTCBBuffer,`<br>`  StackType_t **ppxTimerTaskStackBuffer,`<br>`  uint32_t *pulTimerTaskStackSize`<br>`);` | - `ppxTimerTaskTCBBuffer`: 定时器任务TCB缓冲区指针<br>- `ppxTimerTaskStackBuffer`: 定时器任务堆栈缓冲区指针<br>- `pulTimerTaskStackSize`: 定时器任务堆栈大小指针 | 无 | 提供定时器任务内存 |
 
+# FreeRTOS 消息队列函数参考手册
+
+## 📋 队列创建与删除
+
+| 函数 | 参数 | 返回值 | 说明 |
+|------|------|--------|------|
+| **xQueueCreate**<br>`QueueHandle_t xQueueCreate(`<br>`  UBaseType_t uxQueueLength,`<br>`  UBaseType_t uxItemSize`<br>`);` | - `uxQueueLength`: 队列长度<br>- `uxItemSize`: 消息大小(字节) | 队列句柄(成功)<br>`NULL`(失败) | 动态创建队列 |
+| **xQueueCreateStatic**<br>`QueueHandle_t xQueueCreateStatic(`<br>`  UBaseType_t uxQueueLength,`<br>`  UBaseType_t uxItemSize,`<br>`  uint8_t *pucQueueStorage,`<br>`  StaticQueue_t *pxQueueBuffer`<br>`);` | - `uxQueueLength`: 队列长度<br>- `uxItemSize`: 消息大小<br>- `pucQueueStorage`: 存储区指针<br>- `pxQueueBuffer`: 队列控制块指针 | 队列句柄(成功)<br>`NULL`(失败) | 静态创建队列 |
+| **vQueueDelete**<br>`void vQueueDelete(`<br>`  QueueHandle_t xQueue`<br>`);` | - `xQueue`: 要删除的队列句柄 | 无 | 删除队列 |
+
+## 📤 消息发送
+
+| 函数 | 参数 | 返回值 | 说明 |
+|------|------|--------|------|
+| **xQueueSend**<br>`BaseType_t xQueueSend(`<br>`  QueueHandle_t xQueue,`<br>`  const void *pvItemToQueue,`<br>`  TickType_t xTicksToWait`<br>`);` | - `xQueue`: 队列句柄<br>- `pvItemToQueue`: 发送数据指针<br>- `xTicksToWait`: 阻塞时间 | `pdPASS`: 发送成功<br>`errQUEUE_FULL`: 队列满 | 发送消息(队尾) |
+| **xQueueSendToFront**<br>`BaseType_t xQueueSendToFront(`<br>`  QueueHandle_t xQueue,`<br>`  const void *pvItemToQueue,`<br>`  TickType_t xTicksToWait`<br>`);` | - `xQueue`: 队列句柄<br>- `pvItemToQueue`: 发送数据指针<br>- `xTicksToWait`: 阻塞时间 | `pdPASS`: 发送成功<br>`errQUEUE_FULL`: 队列满 | 发送消息(队首) |
+| **xQueueSendToBack**<br>`BaseType_t xQueueSendToBack(`<br>`  QueueHandle_t xQueue,`<br>`  const void *pvItemToQueue,`<br>`  TickType_t xTicksToWait`<br>`);` | - `xQueue`: 队列句柄<br>- `pvItemToQueue`: 发送数据指针<br>- `xTicksToWait`: 阻塞时间 | `pdPASS`: 发送成功<br>`errQUEUE_FULL`: 队列满 | 发送消息(队尾) |
+| **xQueueSendFromISR**<br>`BaseType_t xQueueSendFromISR(`<br>`  QueueHandle_t xQueue,`<br>`  const void *pvItemToQueue,`<br>`  BaseType_t *pxHigherPriorityTaskWoken`<br>`);` | - `xQueue`: 队列句柄<br>- `pvItemToQueue`: 发送数据指针<br>- `pxHigherPriorityTaskWoken`: 任务唤醒标志 | `pdPASS`: 发送成功<br>`errQUEUE_FULL`: 队列满 | 中断中发送消息 |
+
+## 📥 消息接收
+
+| 函数 | 参数 | 返回值 | 说明 |
+|------|------|--------|------|
+| **xQueueReceive**<br>`BaseType_t xQueueReceive(`<br>`  QueueHandle_t xQueue,`<br>`  void *pvBuffer,`<br>`  TickType_t xTicksToWait`<br>`);` | - `xQueue`: 队列句柄<br>- `pvBuffer`: 接收缓冲区指针<br>- `xTicksToWait`: 阻塞时间 | `pdPASS`: 接收成功<br>`errQUEUE_EMPTY`: 队列空 | 接收消息 |
+| **xQueuePeek**<br>`BaseType_t xQueuePeek(`<br>`  QueueHandle_t xQueue,`<br>`  void *pvBuffer,`<br>`  TickType_t xTicksToWait`<br>`);` | - `xQueue`: 队列句柄<br>- `pvBuffer`: 接收缓冲区指针<br>- `xTicksToWait`: 阻塞时间 | `pdPASS`: 查看成功<br>`errQUEUE_EMPTY`: 队列空 | 查看消息(不删除) |
+| **xQueueReceiveFromISR**<br>`BaseType_t xQueueReceiveFromISR(`<br>`  QueueHandle_t xQueue,`<br>`  void *pvBuffer,`<br>`  BaseType_t *pxHigherPriorityTaskWoken`<br>`);` | - `xQueue`: 队列句柄<br>- `pvBuffer`: 接收缓冲区指针<br>- `pxHigherPriorityTaskWoken`: 任务唤醒标志 | `pdPASS`: 接收成功<br>`errQUEUE_EMPTY`: 队列空 | 中断中接收消息 |
+
+## 🔍 队列状态查询
+
+| 函数 | 参数 | 返回值 | 说明 |
+|------|------|--------|------|
+| **uxQueueMessagesWaiting**<br>`UBaseType_t uxQueueMessagesWaiting(`<br>`  QueueHandle_t xQueue`<br>`);` | - `xQueue`: 队列句柄 | 队列中消息数量 | 查询消息数量 |
+| **uxQueueSpacesAvailable**<br>`UBaseType_t uxQueueSpacesAvailable(`<br>`  QueueHandle_t xQueue`<br>`);` | - `xQueue`: 队列句柄 | 队列剩余空间数量 | 查询剩余空间 |
+| **xQueueIsQueueEmptyFromISR**<br>`BaseType_t xQueueIsQueueEmptyFromISR(`<br>`  QueueHandle_t xQueue`<br>`);` | - `xQueue`: 队列句柄 | `pdTRUE`: 队列空<br>`pdFALSE`: 队列非空 | 中断中查询队列空 |
+| **xQueueIsQueueFullFromISR**<br>`BaseType_t xQueueIsQueueFullFromISR(`<br>`  QueueHandle_t xQueue`<br>`);` | - `xQueue`: 队列句柄 | `pdTRUE`: 队列满<br>`pdFALSE`: 队列非满 | 中断中查询队列满 |
+
+## 🛠️ 队列管理
+
+| 函数 | 参数 | 返回值 | 说明 |
+|------|------|--------|------|
+| **xQueueReset**<br>`BaseType_t xQueueReset(`<br>`  QueueHandle_t xQueue`<br>`);` | - `xQueue`: 队列句柄 | `pdPASS`: 重置成功<br>`pdFAIL`: 重置失败 | 重置队列 |
+| **xQueueOverwrite**<br>`BaseType_t xQueueOverwrite(`<br>`  QueueHandle_t xQueue,`<br>`  const void *pvItemToQueue`<br>`);` | - `xQueue`: 队列句柄<br>- `pvItemToQueue`: 发送数据指针 | 总是返回`pdPASS` | 覆盖发送(用于长度1的队列) |
+| **xQueueOverwriteFromISR**<br>`BaseType_t xQueueOverwriteFromISR(`<br>`  QueueHandle_t xQueue,`<br>`  const void *pvItemToQueue,`<br>`  BaseType_t *pxHigherPriorityTaskWoken`<br>`);` | - `xQueue`: 队列句柄<br>- `pvItemToQueue`: 发送数据指针<br>- `pxHigherPriorityTaskWoken`: 任务唤醒标志 | 总是返回`pdPASS` | 中断中覆盖发送 |
 
