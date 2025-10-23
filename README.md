@@ -71,25 +71,4 @@
 | **vApplicationGetIdleTaskMemory**<br>`void vApplicationGetIdleTaskMemory(`<br>`  StaticTask_t **ppxIdleTaskTCBBuffer,`<br>`  StackType_t **ppxIdleTaskStackBuffer,`<br>`  uint32_t *pulIdleTaskStackSize`<br>`);` | - `ppxIdleTaskTCBBuffer`: 空闲任务TCB缓冲区指针<br>- `ppxIdleTaskStackBuffer`: 空闲任务堆栈缓冲区指针<br>- `pulIdleTaskStackSize`: 空闲任务堆栈大小指针 | 无 | 提供空闲任务内存 |
 | **vApplicationGetTimerTaskMemory**<br>`void vApplicationGetTimerTaskMemory(`<br>`  StaticTask_t **ppxTimerTaskTCBBuffer,`<br>`  StackType_t **ppxTimerTaskStackBuffer,`<br>`  uint32_t *pulTimerTaskStackSize`<br>`);` | - `ppxTimerTaskTCBBuffer`: 定时器任务TCB缓冲区指针<br>- `ppxTimerTaskStackBuffer`: 定时器任务堆栈缓冲区指针<br>- `pulTimerTaskStackSize`: 定时器任务堆栈大小指针 | 无 | 提供定时器任务内存 |
 
-## 📝 使用示例模板
 
-```c
-// 任务函数模板
-void vTaskTemplate(void *pvParameters)
-{
-    // 任务初始化代码
-    for(;;) {
-        // 任务主循环代码
-        vTaskDelay(pdMS_TO_TICKS(1000));  // 延时1秒
-    }
-}
-
-// 创建任务示例
-xTaskCreate(
-    vTaskTemplate,    // 任务函数
-    "TemplateTask",   // 任务名称  
-    1024,            // 堆栈大小
-    NULL,            // 参数
-    1,               // 优先级
-    NULL             // 任务句柄
-);
