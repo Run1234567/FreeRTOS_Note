@@ -120,3 +120,145 @@
 | **xQueueOverwrite**<br>`BaseType_t xQueueOverwrite(`<br>`  QueueHandle_t xQueue,`<br>`  const void *pvItemToQueue`<br>`);` | - `xQueue`: 队列句柄<br>- `pvItemToQueue`: 发送数据指针 | 总是返回`pdPASS` | 覆盖发送(用于长度1的队列) |
 | **xQueueOverwriteFromISR**<br>`BaseType_t xQueueOverwriteFromISR(`<br>`  QueueHandle_t xQueue,`<br>`  const void *pvItemToQueue,`<br>`  BaseType_t *pxHigherPriorityTaskWoken`<br>`);` | - `xQueue`: 队列句柄<br>- `pvItemToQueue`: 发送数据指针<br>- `pxHigherPriorityTaskWoken`: 任务唤醒标志 | 总是返回`pdPASS` | 中断中覆盖发送 |
 
+
+
+# 二值信号量
+
+## 核心概念
+**二值信号量 = 事件通知开关 🚦**
+
+- 只有两种状态：0（空）或 1（满）
+- 用于任务同步，不传递数据
+
+## 三个关键状态
+- **0（空）**：事件未发生，任务获取时会**阻塞**
+- **1（满）**：事件已发生，任务可立即获取
+
+## 二值信号量核心函数详细表格
+
+| 函数 | 参数 | 返回值 | 说明 |
+|------|------|--------|------|
+| **xSemaphoreCreateBinary**<br>`SemaphoreHandle_t xSemaphoreCreateBinary(void);` | 无 | ✅ 成功：有效句柄<br>❌ 失败：NULL | 创建二值信号量<br>初始状态为 0（空）<br>需要配合 vSemaphoreDelete() 释放内存 |
+| **xSemaphoreTake**<br>`BaseType_t xSemaphoreTake(`<br>`  SemaphoreHandle_t xSemaphore,`<br>`  TickType_t xTicksToWait`<br>`);` | - `xSemaphore`: 信号量句柄<br>- `xTicksToWait`: 等待时间<br>  - `0`: 不等待<br>  - `portMAX_DELAY`: 无限等待<br>  - 具体数值: 等待指定tick数 | ✅ `pdTRUE`: 获取成功<br>❌ `pdFALSE`: 获取失败 | 获取信号量<br>信号量=1 → 立即成功，状态1→0<br>信号量=0 → 根据等待时间决定是否**阻塞**<br>不能在中断中使用 |
+| **xSemaphoreGive**<br>`BaseType_t xSemaphoreGive(`<br>`  SemaphoreHandle_t xSemaphore`<br>`);` | - `xSemaphore`: 信号量句柄 | ✅ `pdTRUE`: 释放成功<br>❌ `pdFALSE`: 释放失败 | 释放信号量<br>信号量=0 → 释放成功，状态0→1<br>信号量=1 → 释放失败，状态不变<br>唤醒一个等待的任务 |
+| **xSemaphoreGiveFromISR**<br>`BaseType_t xSemaphoreGiveFromISR(`<br>`  SemaphoreHandle_t xSemaphore,`<br>`  BaseType_t *pxHigherPriorityTaskWoken`<br>`);` | - `xSemaphore`: 信号量句柄<br>- `pxHigherPriorityTaskWoken`: 指向任务切换标志的指针 | ✅ `pdTRUE`: 释放成功<br>❌ `pdFALSE`: 释放失败 | 中断专用释放函数<br>需要检查 pxHigherPriorityTaskWoken<br>如果为 pdTRUE，需调用 portYIELD_FROM_ISR(pdTRUE)<br>不能在中断中获取信号量 |
+| **uxSemaphoreGetCount**<br>`UBaseType_t uxSemaphoreGetCount(`<br>`  SemaphoreHandle_t xSemaphore`<br>`);` | - `xSemaphore`: 信号量句柄 | `0`: 信号量为空<br>`1`: 信号量为满 | 获取信号量当前状态<br>用于调试和状态检查<br>不影响信号量状态 |
+| **vSemaphoreDelete**<br>`void vSemaphoreDelete(`<br>`  SemaphoreHandle_t xSemaphore`<br>`);` | - `xSemaphore`: 要删除的信号量句柄 | 无 | 删除信号量，释放内存<br>删除后句柄失效，不能再使用<br>确保没有任务在使用该信号量 |
+
+## ⚠️ 重要说明
+**阻塞**：任务等待信号量从0变1时的状态，任务会被挂起直到信号量可用或超时
+
+<div align="center">
+
+# 计数信号量 
+
+## 核心概念
+**计数信号量 = 资源计数器 🔢**
+
+- 计数值范围：0 到 N（N > 1）
+- 用于资源管理和事件计数
+- 计数值 = 当前可用资源数量
+
+## 三个关键状态
+- **0**：资源耗尽，任务获取时会**阻塞**
+- **1 到 N-1**：有部分资源可用
+- **N**：资源全满，释放操作会失败
+
+## 计数信号量核心函数详细表格
+
+| 函数 | 参数 | 返回值 | 说明 |
+|------|------|--------|------|
+| **xSemaphoreCreateCounting**<br>`SemaphoreHandle_t xSemaphoreCreateCounting(`<br>`  UBaseType_t uxMaxCount,`<br>`  UBaseType_t uxInitialCount`<br>`);` | - `uxMaxCount`: 最大计数值<br>- `uxInitialCount`: 初始计数值 | ✅ 成功：有效句柄<br>❌ 失败：NULL | 创建计数信号量<br>初始状态为 uxInitialCount<br>最大计数值为 uxMaxCount |
+| **xSemaphoreTake**<br>`BaseType_t xSemaphoreTake(`<br>`  SemaphoreHandle_t xSemaphore,`<br>`  TickType_t xTicksToWait`<br>`);` | - `xSemaphore`: 信号量句柄<br>- `xTicksToWait`: 等待时间<br>  - `0`: 不等待<br>  - `portMAX_DELAY`: 无限等待<br>  - 具体数值: 等待指定tick数 | ✅ `pdTRUE`: 获取成功<br>❌ `pdFALSE`: 获取失败 | 获取一个资源<br>计数值>0 → 立即成功，计数值-1<br>计数值=0 → 根据等待时间决定是否**阻塞** |
+| **xSemaphoreGive**<br>`BaseType_t xSemaphoreGive(`<br>`  SemaphoreHandle_t xSemaphore`<br>`);` | - `xSemaphore`: 信号量句柄 | ✅ `pdTRUE`: 释放成功<br>❌ `pdFALSE`: 释放失败 | 释放一个资源<br>计数值<最大值 → 释放成功，计数值+1<br>计数值=最大值 → 释放失败，计数值不变 |
+| **xSemaphoreGiveFromISR**<br>`BaseType_t xSemaphoreGiveFromISR(`<br>`  SemaphoreHandle_t xSemaphore,`<br>`  BaseType_t *pxHigherPriorityTaskWoken`<br>`);` | - `xSemaphore`: 信号量句柄<br>- `pxHigherPriorityTaskWoken`: 指向任务切换标志的指针 | ✅ `pdTRUE`: 释放成功<br>❌ `pdFALSE`: 释放失败 | 中断专用释放函数<br>计数值<最大值 → 释放成功，计数值+1<br>需要检查任务切换标志 |
+| **uxSemaphoreGetCount**<br>`UBaseType_t uxSemaphoreGetCount(`<br>`  SemaphoreHandle_t xSemaphore`<br>`);` | - `xSemaphore`: 信号量句柄 | 0 到 N：当前可用资源数量 | 获取信号量当前计数值<br>用于调试和状态检查<br>不影响信号量状态 |
+| **vSemaphoreDelete**<br>`void vSemaphoreDelete(`<br>`  SemaphoreHandle_t xSemaphore`<br>`);` | - `xSemaphore`: 要删除的信号量句柄 | 无 | 删除信号量，释放内存<br>删除后句柄失效，不能再使用<br>确保没有任务在使用该信号量 |
+
+## ⚠️ 重要说明
+**阻塞**：当计数值为0时，任务获取信号量会被挂起，直到有资源释放或超时
+
+**资源管理**：计数值表示当前可用资源数量，获取时-1，释放时+1
+
+**事件计数**：也可用于统计事件发生次数，每次事件发生释放信号量
+
+<div align="center">
+
+🎯 **适用于：缓冲区管理、线程池、资源池** 
+
+# 互斥信号量 
+
+## 核心概念
+**互斥信号量 = 资源锁 🔒**
+
+- 只有两种状态：0（被锁定）或 1（可用）
+- 具有优先级继承机制，防止优先级反转
+- 用于保护临界资源，确保独占访问
+
+## 三个关键状态
+- **0（被锁定）**：资源被占用，任务获取时会**阻塞**
+- **1（可用）**：资源空闲，任务可立即获取
+
+## 互斥信号量核心函数详细表格
+
+| 函数 | 参数 | 返回值 | 说明 |
+|------|------|--------|------|
+| **xSemaphoreCreateMutex**<br>`SemaphoreHandle_t xSemaphoreCreateMutex(void);` | 无 | ✅ 成功：有效句柄<br>❌ 失败：NULL | 创建互斥信号量<br>初始状态为 1（可用）<br>具有优先级继承特性 |
+| **xSemaphoreTake**<br>`BaseType_t xSemaphoreTake(`<br>`  SemaphoreHandle_t xSemaphore,`<br>`  TickType_t xTicksToWait`<br>`);` | - `xSemaphore`: 互斥量句柄<br>- `xTicksToWait`: 等待时间<br>  - `0`: 不等待<br>  - `portMAX_DELAY`: 无限等待<br>  - 具体数值: 等待指定tick数 | ✅ `pdTRUE`: 获取成功<br>❌ `pdFALSE`: 获取失败 | 获取互斥锁<br>互斥量=1 → 立即成功，状态1→0，任务成为持有者<br>互斥量=0 → 根据等待时间决定是否**阻塞**<br>不能在中断中使用 |
+| **xSemaphoreGive**<br>`BaseType_t xSemaphoreGive(`<br>`  SemaphoreHandle_t xSemaphore`<br>`);` | - `xSemaphore`: 互斥量句柄 | ✅ `pdTRUE`: 释放成功<br>❌ `pdFALSE`: 释放失败 | 释放互斥锁<br>必须由持有者任务释放<br>互斥量=0 → 释放成功，状态0→1<br>互斥量=1 → 释放失败，状态不变 |
+| **uxSemaphoreGetCount**<br>`UBaseType_t uxSemaphoreGetCount(`<br>`  SemaphoreHandle_t xSemaphore`<br>`);` | - `xSemaphore`: 互斥量句柄 | `0`: 被占用<br>`1`: 可用 | 获取互斥量当前状态<br>用于调试和状态检查<br>不影响互斥量状态 |
+| **vSemaphoreDelete**<br>`void vSemaphoreDelete(`<br>`  SemaphoreHandle_t xSemaphore`<br>`);` | - `xSemaphore`: 要删除的互斥量句柄 | 无 | 删除互斥量，释放内存<br>删除后句柄失效，不能再使用<br>确保没有任务在使用该互斥量 |
+
+## ⚠️ 重要说明
+**阻塞**：当互斥量被其他任务持有时，任务获取互斥量会被挂起，直到互斥量释放或超时
+
+**优先级继承**：当高优先级任务等待互斥量时，系统会临时提升持有者任务的优先级，防止优先级反转
+
+**所有权**：只有获取互斥量的任务才能释放它，其他任务释放会导致未定义行为
+
+**中断限制**：互斥信号量不能在中断中使用（包括获取和释放）
+
+<div align="center">
+
+🎯 **适用于：临界区保护、共享资源保护** | 🚀 **防止优先级反转**
+
+# 递归互斥量 
+
+## 核心概念
+**递归互斥量 = 可重入锁 🔑**
+
+- 允许同一任务多次获取同一个互斥量
+- 必须释放相同次数才能真正释放
+- 具有优先级继承机制
+- 解决"自己锁死自己"的问题
+
+## 三个关键状态
+- **0（被锁定）**：互斥量被占用，其他任务获取会**阻塞**
+- **1（可用）**：互斥量空闲，任务可立即获取
+- **内部计数**：记录同一任务的获取次数
+
+## 递归互斥量核心函数详细表格
+
+| 函数 | 参数 | 返回值 | 说明 |
+|------|------|--------|------|
+| **xSemaphoreCreateRecursiveMutex**<br>`SemaphoreHandle_t xSemaphoreCreateRecursiveMutex(void);` | 无 | ✅ 成功：有效句柄<br>❌ 失败：NULL | 创建递归互斥量<br>初始状态为 1（可用）<br>内部计数初始为 0<br>具有优先级继承特性 |
+| **xSemaphoreTakeRecursive**<br>`BaseType_t xSemaphoreTakeRecursive(`<br>`  SemaphoreHandle_t xSemaphore,`<br>`  TickType_t xTicksToWait`<br>`);` | - `xSemaphore`: 递归互斥量句柄<br>- `xTicksToWait`: 等待时间<br>  - `0`: 不等待<br>  - `portMAX_DELAY`: 无限等待<br>  - 具体数值: 等待指定tick数 | ✅ `pdTRUE`: 获取成功<br>❌ `pdFALSE`: 获取失败 | 递归获取互斥锁<br>首次获取：状态1→0，内部计数=1<br>重复获取：内部计数+1，不会**阻塞**<br>其他任务获取：会**阻塞**<br>不能在中断中使用 |
+| **xSemaphoreGiveRecursive**<br>`BaseType_t xSemaphoreGiveRecursive(`<br>`  SemaphoreHandle_t xSemaphore`<br>`);` | - `xSemaphore`: 递归互斥量句柄 | ✅ `pdTRUE`: 释放成功<br>❌ `pdFALSE`: 释放失败 | 递归释放互斥锁<br>必须由持有者任务释放<br>部分释放：内部计数-1，状态保持0<br>完全释放：内部计数=0→状态0→1<br>必须与获取次数匹配 |
+| **uxSemaphoreGetCount**<br>`UBaseType_t uxSemaphoreGetCount(`<br>`  SemaphoreHandle_t xSemaphore`<br>`);` | - `xSemaphore`: 递归互斥量句柄 | `0`: 被占用<br>`1`: 可用 | 获取递归互斥量当前状态<br>不反映内部计数<br>用于调试和状态检查 |
+| **vSemaphoreDelete**<br>`void vSemaphoreDelete(`<br>`  SemaphoreHandle_t xSemaphore`<br>`);` | - `xSemaphore`: 要删除的递归互斥量句柄 | 无 | 删除递归互斥量，释放内存<br>删除后句柄失效，不能再使用<br>确保没有任务在使用该互斥量 |
+
+## ⚠️ 重要说明
+**阻塞**：当递归互斥量被其他任务持有时，任务获取互斥量会被挂起，直到互斥量释放或超时
+
+**内部计数**：记录同一任务的获取次数，获取时+1，释放时-1，计数=0时真正释放
+
+**匹配释放**：必须调用相同次数的GiveRecursive和TakeRecursive，否则会导致未定义行为
+
+**优先级继承**：当高优先级任务等待递归互斥量时，系统会临时提升持有者任务的优先级
+
+**中断限制**：递归互斥量不能在中断中使用（包括获取和释放）
+
+<div align="center">
+
+🎯 **适用于：递归函数、复杂调用链、面向对象设计** | 🚀 **防止自死锁**
+
