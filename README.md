@@ -120,7 +120,6 @@
 | **xQueueOverwrite**<br>`BaseType_t xQueueOverwrite(`<br>`  QueueHandle_t xQueue,`<br>`  const void *pvItemToQueue`<br>`);` | - `xQueue`: 队列句柄<br>- `pvItemToQueue`: 发送数据指针 | 总是返回`pdPASS` | 覆盖发送(用于长度1的队列) |
 | **xQueueOverwriteFromISR**<br>`BaseType_t xQueueOverwriteFromISR(`<br>`  QueueHandle_t xQueue,`<br>`  const void *pvItemToQueue,`<br>`  BaseType_t *pxHigherPriorityTaskWoken`<br>`);` | - `xQueue`: 队列句柄<br>- `pvItemToQueue`: 发送数据指针<br>- `pxHigherPriorityTaskWoken`: 任务唤醒标志 | 总是返回`pdPASS` | 中断中覆盖发送 |
 
-
 # 二值信号量
 
 ## 核心概念
@@ -255,7 +254,6 @@ xCountingSem = NULL;
 
 **事件计数**：也可用于统计事件发生次数，每次事件发生释放信号量
 
-<div align="center">
 
 🎯 **适用于：缓冲区管理、线程池、资源池** 
 
