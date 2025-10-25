@@ -4,7 +4,7 @@
 
 
 # FreeRTOS 任务管理函数源码参考
-
+</div>
 ## 📋 任务创建与删除
 
 | 函数 | 参数 | 返回值 | 说明 |
@@ -77,6 +77,7 @@
 | **vApplicationGetTimerTaskMemory**<br>`void vApplicationGetTimerTaskMemory(`<br>`  StaticTask_t **ppxTimerTaskTCBBuffer,`<br>`  StackType_t **ppxTimerTaskStackBuffer,`<br>`  uint32_t *pulTimerTaskStackSize`<br>`);` | - `ppxTimerTaskTCBBuffer`: 定时器任务TCB缓冲区指针<br>- `ppxTimerTaskStackBuffer`: 定时器任务堆栈缓冲区指针<br>- `pulTimerTaskStackSize`: 定时器任务堆栈大小指针 | 无 | 提供定时器任务内存 |
 
 # FreeRTOS 消息队列函数参考手册
+</div>
 
 ## 📋 队列创建与删除
 
@@ -121,6 +122,7 @@
 | **xQueueOverwriteFromISR**<br>`BaseType_t xQueueOverwriteFromISR(`<br>`  QueueHandle_t xQueue,`<br>`  const void *pvItemToQueue,`<br>`  BaseType_t *pxHigherPriorityTaskWoken`<br>`);` | - `xQueue`: 队列句柄<br>- `pvItemToQueue`: 发送数据指针<br>- `pxHigherPriorityTaskWoken`: 任务唤醒标志 | 总是返回`pdPASS` | 中断中覆盖发送 |
 
 # 二值信号量
+</div>
 
 ## 核心概念
 **二值信号量 = 事件通知开关 🚦**
@@ -190,6 +192,7 @@ xBinarySem = NULL;
 
 
 # 计数信号量 
+</div>
 
 ## 核心概念
 **计数信号量 = 资源计数器 🔢**
@@ -258,6 +261,7 @@ xCountingSem = NULL;
 🎯 **适用于：缓冲区管理、线程池、资源池** 
 
 # 互斥信号量 
+</div>
 
 ## 核心概念
 **互斥信号量 = 资源锁 🔒**
@@ -323,6 +327,7 @@ xMutex = NULL;
 🎯 **适用于：临界区保护、共享资源保护** | 🚀 **防止优先级反转**
 
 # 递归互斥量 
+</div>
 
 ## 核心概念
 **递归互斥量 = 可重入锁 🔑**
@@ -389,7 +394,8 @@ xMutex = NULL;
 <div align="center">
 
 🎯 **适用于：递归函数、复杂调用链、面向对象设计** | 🚀 **防止自死锁**
-# FreeRTOS 事件组简易笔记
+# FreeRTOS 事件组
+</div>
 
 ## 🎯 基本概念
 **事件组**：32位变量，每个位代表一个独立事件
