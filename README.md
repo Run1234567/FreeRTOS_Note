@@ -449,3 +449,31 @@ xEventGroupSync(
     1000                   // 等待1秒
 );
 ```
+# FreeRTOS 软件定时器函数
+
+| 函数 | 参数 | 返回值 | 说明 |
+|:---|:---|:---|:---|
+| **xTimerCreate**<br>`TimerHandle_t xTimerCreate(`<br>`  const char * const pcTimerName,`<br>`  TickType_t xTimerPeriodInTicks,`<br>`  UBaseType_t uxAutoReload,`<br>`  void * pvTimerID,`<br>`  TimerCallbackFunction_t pxCallbackFunction`<br>`);` | - `pcTimerName`: 定时器名称<br>- `xTimerPeriodInTicks`: 定时器周期<br>- `uxAutoReload`: 自动重载标志<br>- `pvTimerID`: 定时器标识符<br>- `pxCallbackFunction`: 回调函数 | 定时器句柄 | 创建软件定时器 |
+| **xTimerStart**<br>`BaseType_t xTimerStart(`<br>`  TimerHandle_t xTimer,`<br>`  TickType_t xTicksToWait`<br>`);` | - `xTimer`: 定时器句柄<br>- `xTicksToWait`: 最大等待时间 | `pdPASS`/`pdFAIL` | 启动定时器 |
+| **xTimerStop**<br>`BaseType_t xTimerStop(`<br>`  TimerHandle_t xTimer,`<br>`  TickType_t xTicksToWait`<br>`);` | - `xTimer`: 定时器句柄<br>- `xTicksToWait`: 最大等待时间 | `pdPASS`/`pdFAIL` | 停止定时器 |
+| **xTimerReset**<br>`BaseType_t xTimerReset(`<br>`  TimerHandle_t xTimer,`<br>`  TickType_t xTicksToWait`<br>`);` | - `xTimer`: 定时器句柄<br>- `xTicksToWait`: 最大等待时间 | `pdPASS`/`pdFAIL` | 重置定时器 |
+| **xTimerDelete**<br>`BaseType_t xTimerDelete(`<br>`  TimerHandle_t xTimer,`<br>`  TickType_t xTicksToWait`<br>`);` | - `xTimer`: 定时器句柄<br>- `xTicksToWait`: 最大等待时间 | `pdPASS`/`pdFAIL` | 删除定时器 |
+| **xTimerChangePeriod**<br>`BaseType_t xTimerChangePeriod(`<br>`  TimerHandle_t xTimer,`<br>`  TickType_t xNewPeriodInTicks,`<br>`  TickType_t xTicksToWait`<br>`);` | - `xTimer`: 定时器句柄<br>- `xNewPeriodInTicks`: 新周期值<br>- `xTicksToWait`: 最大等待时间 | `pdPASS`/`pdFAIL` | 修改定时器周期 |
+| **xTimerIsTimerActive**<br>`BaseType_t xTimerIsTimerActive(`<br>`  TimerHandle_t xTimer`<br>`);` | - `xTimer`: 定时器句柄 | 定时器状态 | 检查定时器是否活动 |
+| **pvTimerGetTimerID**<br>`void * pvTimerGetTimerID(`<br>`  TimerHandle_t xTimer`<br>`);` | - `xTimer`: 定时器句柄 | 定时器ID | 获取定时器标识符 |
+| **vTimerSetTimerID**<br>`void vTimerSetTimerID(`<br>`  TimerHandle_t xTimer,`<br>`  void * pvNewID`<br>`);` | - `xTimer`: 定时器句柄<br>- `pvNewID`: 新标识符 | 无 | 设置定时器标识符 |
+| **xTimerStartFromISR**<br>`BaseType_t xTimerStartFromISR(`<br>`  TimerHandle_t xTimer,`<br>`  BaseType_t * pxHigherPriorityTaskWoken`<br>`);` | - `xTimer`: 定时器句柄<br>- `pxHigherPriorityTaskWoken`: 任务唤醒标志 | `pdPASS`/`pdFAIL` | 在中断中启动定时器 |
+| **xTimerStopFromISR**<br>`BaseType_t xTimerStopFromISR(`<br>`  TimerHandle_t xTimer,`<br>`  BaseType_t * pxHigherPriorityTaskWoken`<br>`);` | - `xTimer`: 定时器句柄<br>- `pxHigherPriorityTaskWoken`: 任务唤醒标志 | `pdPASS`/`pdFAIL` | 在中断中停止定时器 |
+| **xTimerResetFromISR**<br>`BaseType_t xTimerResetFromISR(`<br>`  TimerHandle_t xTimer,`<br>`  BaseType_t * pxHigherPriorityTaskWoken`<br>`);` | - `xTimer`: 定时器句柄<br>- `pxHigherPriorityTaskWoken`: 任务唤醒标志 | `pdPASS`/`pdFAIL` | 在中断中重置定时器 |
+| **xTimerChangePeriodFromISR**<br>`BaseType_t xTimerChangePeriodFromISR(`<br>`  TimerHandle_t xTimer,`<br>`  TickType_t xNewPeriodInTicks,`<br>`  BaseType_t * pxHigherPriorityTaskWoken`<br>`);` | - `xTimer`: 定时器句柄<br>- `xNewPeriodInTicks`: 新周期值<br>- `pxHigherPriorityTaskWoken`: 任务唤醒标志 | `pdPASS`/`pdFAIL` | 在中断中修改周期 |
+
+# FreeRTOS 任务通知函数
+
+| 函数 | 参数 | 返回值 | 说明 |
+|:---|:---|:---|:---|
+| **xTaskNotifyGive**<br>`BaseType_t xTaskNotifyGive(`<br>`  TaskHandle_t xTaskToNotify`<br>`);` | - `xTaskToNotify`: 要通知的任务句柄 | 总是返回 `pdPASS` | 发送任务通知（信号量Give操作），将目标任务的通知值加1 |
+| **ulTaskNotifyTake**<br>`uint32_t ulTaskNotifyTake(`<br>`  BaseType_t xClearCountOnExit,`<br>`  TickType_t xTicksToWait`<br>`);` | - `xClearCountOnExit`: 退出时是否清零<br>- `xTicksToWait`: 等待超时时间 | 获取到的通知值 | 等待并获取任务通知（信号量Take操作） |
+| **xTaskNotify**<br>`BaseType_t xTaskNotify(`<br>`  TaskHandle_t xTaskToNotify,`<br>`  uint32_t ulValue,`<br>`  eNotifyAction eAction`<br>`);` | - `xTaskToNotify`: 要通知的任务句柄<br>- `ulValue`: 通知值<br>- `eAction`: 操作类型 | `pdPASS` 或 `pdFAIL` | 通用任务通知函数，支持多种操作模式 |
+| **xTaskNotifyWait**<br>`BaseType_t xTaskNotifyWait(`<br>`  uint32_t ulBitsToClearOnEntry,`<br>`  uint32_t ulBitsToClearOnExit,`<br>`  uint32_t *pulNotificationValue,`<br>`  TickType_t xTicksToWait`<br>`);` | - `ulBitsToClearOnEntry`: 进入时清除的位<br>- `ulBitsToClearOnExit`: 退出时清除的位<br>- `pulNotificationValue`: 存储通知值的指针<br>- `xTicksToWait`: 等待超时时间 | `pdTRUE` 或 `pdFALSE` | 通用等待任务通知函数，支持位操作 |
+| **vTaskNotifyGiveFromISR**<br>`void vTaskNotifyGiveFromISR(`<br>`  TaskHandle_t xTaskToNotify,`<br>`  BaseType_t *pxHigherPriorityTaskWoken`<br>`);` | - `xTaskToNotify`: 要通知的任务句柄<br>- `pxHigherPriorityTaskWoken`: 任务唤醒标志指针 | 无 | 中断中发送任务通知（信号量Give操作） |
+| **xTaskNotifyFromISR**<br>`BaseType_t xTaskNotifyFromISR(`<br>`  TaskHandle_t xTaskToNotify,`<br>`  uint32_t ulValue,`<br>`  eNotifyAction eAction,`<br>`  BaseType_t *pxHigherPriorityTaskWoken`<br>`);` | - `xTaskToNotify`: 要通知的任务句柄<br>- `ulValue`: 通知值<br>- `eAction`: 操作类型<br>- `pxHigherPriorityTaskWoken`: 任务唤醒标志指针 | `pdPASS` 或 `pdFAIL` | 中断中通用任务通知函数 |
